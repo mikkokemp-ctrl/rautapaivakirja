@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#15181d">
+<meta name="description" content="Painonnoston treenilaskuri, treenipäiväkirja ja ennätykset.">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<title>Rautapäiväkirja</title>
+<style>
+:root{color-scheme:dark;--bg:#101216;--panel:#191d23;--panel2:#20252d;--line:#303741;--text:#f4f6f8;--muted:#a5adb8;--accent:#b8f34a;--accentText:#18210b;--danger:#ff7777;--radius:16px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer;border:0;border-radius:12px;padding:11px 15px;font-weight:700;background:var(--accent);color:var(--accentText)}button.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}button.danger{background:#3a2023;color:#ffc3c3;border:1px solid #69363c}button.small{padding:7px 10px;font-size:13px}
+header{padding:22px max(18px,calc((100vw - 900px)/2));padding-bottom:15px;background:linear-gradient(135deg,#1d242b,#111318);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border-radius:12px;background:var(--accent);color:#18210b;display:grid;place-items:center;font-size:24px;font-weight:900}
+h1{font-size:22px;margin:0;letter-spacing:-.5px}header p{margin:4px 0 0;color:var(--muted);font-size:13px}
+main{max-width:900px;margin:0 auto;padding:16px 16px 100px}.tabs{display:flex;gap:7px;overflow:auto;padding:4px 0 16px;position:sticky;top:0;background:var(--bg);z-index:4}
+.tab{white-space:nowrap;background:var(--panel);color:var(--muted);border:1px solid var(--line);padding:10px 13px}.tab.active{background:var(--accent);color:var(--accentText);border-color:var(--accent)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:17px;margin-bottom:14px}.panel h2{font-size:18px;margin:0 0 6px}.hint{color:var(--muted);font-size:13px;margin:0 0 14px}
+label{display:block;font-size:13px;font-weight:700;color:#dce1e7;margin:12px 0 6px}
+input,textarea,select{width:100%;background:#111419;color:var(--text);border:1px solid #3a424e;border-radius:11px;padding:12px;outline:none}
+input:focus,textarea:focus,[contenteditable="true"]:focus{border-color:var(--accent);box-shadow:0 0 0 2px #b8f34a22}
+textarea{min-height:220px;resize:vertical;line-height:1.5}
+.editor{min-height:220px;max-height:55vh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#111419;color:var(--text);border:1px solid #3a424e;border-radius:11px;padding:12px;outline:none}
+.editor:empty:before{content:attr(data-placeholder);color:#707985}
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.row .fit{flex:0 0 auto}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.muted{color:var(--muted)}.status{margin-top:10px;color:var(--muted);font-size:13px}.hidden{display:none!important}
+.preview{background:#fff;color:#161616;border-radius:12px;padding:18px;overflow-wrap:anywhere}.preview .workout-title{font-weight:700;margin-bottom:12px}.preview .lift{font-weight:700;margin-top:12px}.preview .set{padding-left:0;margin:3px 0}.preview .extra{margin:5px 0}.preview strong{font-weight:800}
+.entry{padding:13px 0;border-bottom:1px solid var(--line)}.entry:last-child{border-bottom:0}.entry-title{font-weight:800}.entry-meta{font-size:12px;color:var(--muted);margin:3px 0 9px}.entry-preview{white-space:pre-wrap;color:#d5dbe2;font-size:14px;max-height:90px;overflow:hidden}
+.record-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.record{background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:13px}.record .record-name{font-weight:700;margin-bottom:8px}.record .record-kg{display:flex;gap:8px;align-items:center}.record input{font-size:20px;font-weight:800;max-width:130px}.record small{color:var(--muted)}
+details{border-top:1px solid var(--line);padding-top:12px;margin-top:14px}summary{cursor:pointer;font-weight:700}
+.notice{background:#262a1f;border:1px solid #4a5830;color:#d9edb5;padding:12px;border-radius:12px;font-size:13px;margin-top:12px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:12px}
+@media(min-width:700px){main{padding-top:22px}.layout{display:grid;grid-template-columns:1fr 1fr;gap:14px}.layout .panel{margin:0}.editor{min-height:330px}}
+@media print{body{background:white;color:black}.no-print,header,.tabs,footer{display:none!important}main{max-width:none;padding:0}.panel{border:0;background:white;padding:0}.preview{padding:0}.preview .lift{break-after:avoid}#view-log,#view-records,#view-settings{display:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo">R</div><div><h1>Rautapäiväkirja</h1><p>Painonnoston treenilaskuri · päiväkirja · ennätykset</p></div></div>
+</header>
+<main>
+  <nav class="tabs no-print" aria-label="Päänavigaatio">
+    <button class="tab active" data-tab="workout">Treenilaskuri</button>
+    <button class="tab" data-tab="log">Päiväkirja</button>
+    <button class="tab" data-tab="records">Ennätykset</button>
+    <button class="tab" data-tab="settings">Varmuuskopio</button>
+  </nav>
+
+  <section id="view-workout">
+    <div class="panel no-print">
+      <h2>Liitä koko treeni</h2>
+      <p class="hint">Kopioi valmentajan ohjelma ja liitä se tähän. Voit liittää myös muotoiltua tekstiä esimerkiksi Google Docsista; lihavoinnit pyritään säilyttämään.</p>
+      <div id="workoutInput" class="editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Liitä koko valmentajan kirjoittama treeni tähän…"></div>
+      <div class="row">
+        <div><label for="workoutDate">Harjoituspäivä</label><input id="workoutDate" type="date"></div>
+        <div><label for="workoutName">Harjoituksen nimi (valinnainen)</label><input id="workoutName" placeholder="Esim. Harjoitus 2"></div>
+      </div>
+      <div class="actions">
+        <button id="calculateBtn">Laske treeni</button>
+        <button id="clearBtn" class="secondary">Tyhjennä</button>
+      </div>
+      <div id="calcStatus" class="status" aria-live="polite"></div>
+      <div id="unknownBox" class="notice hidden"></div>
+    </div>
+    <div id="previewPanel" class="panel hidden">
+      <div class="row no-print"><div><h2>Valmis treeni</h2><p class="hint">Prosentit ja toistot säilyvät; lasketut kilot lisätään sulkeisiin.</p></div></div>
+      <div id="workoutPreview" class="preview"></div>
+      <div class="actions no-print">
+        <button id="copyBtn">Kopioi treeni</button>
+        <button id="printBtn" class="secondary">Tulosta / PDF</button>
+        <button id="saveBtn" class="secondary">Tallenna päiväkirjaan</button>
+      </div>
+      <div id="saveStatus" class="status" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section id="view-log" class="hidden">
+    <div class="panel">
+      <h2>Treenipäiväkirja</h2><p class="hint">Tallennetut harjoitukset säilyvät tässä selaimessa.</p>
+      <div class="row"><input id="logSearch" placeholder="Hae nimellä tai treenin sisällöllä"><button class="secondary fit" id="exportLogBtn">Vie treenit</button></div>
+      <div id="logList"></div>
+    </div>
+  </section>
+
+  <section id="view-records" class="hidden">
+    <div class="panel">
+      <h2>Ennätykset ja maksimipohjat</h2>
+      <p class="hint">Muokkaa pohjia tarvittaessa. Muutos vaikuttaa tuleviin laskuihin, ei vanhoihin päiväkirjamerkintöihin.</p>
+      <div id="recordGrid" class="record-grid"></div>
+      <details><summary>Lisää uusi liike / maksimipohja</summary>
+        <label for="newRecordName">Liikkeen nimi</label><input id="newRecordName" placeholder="Esim. Etukyykky">
+        <label for="newRecordKg">Maksimipohja (kg)</label><input id="newRecordKg" type="number" min="1" step="0.5" placeholder="Esim. 140">
+        <div class="actions"><button id="addRecordBtn">Lisää liike</button></div>
+      </details>
+      <div class="actions"><button class="secondary" id="resetRecordsBtn">Palauta alkuperäiset pohjat</button></div>
+    </div>
+  </section>
+
+  <section id="view-settings" class="hidden">
+    <div class="panel">
+      <h2>Varmuuskopio ja tiedot</h2>
+      <p class="hint">Tiedot ovat tämän selaimen paikallisessa muistissa. Vie varmuuskopio säännöllisesti ja palauta se tarvittaessa samalla tai toisella laitteella.</p>
+      <div class="actions"><button id="backupBtn">Lataa varmuuskopio (.json)</button><button id="restoreBtn" class="secondary">Palauta varmuuskopio</button><input id="restoreFile" type="file" accept=".json,application/json" class="hidden"></div>
+      <div id="backupStatus" class="status"></div>
+      <div class="notice">Tietoja ei synkronoida automaattisesti laitteiden välillä. Selaimen tietojen tyhjentäminen voi poistaa paikalliset treenit. Varmuuskopio sisältää ennätykset ja päiväkirjan.</div>
+      <details><summary>Tuetut treenimerkinnät</summary>
+        <p class="muted">Tulkinta tunnistaa esimerkiksi muodot 75%x4, 75% x 4, 80%×3 ja sarjat kuten 70% x 2+1. Jokainen sarja tulostetaan omalle riville. Liikkeen maksimipohja valitaan liikkeen nimen ja mahdollisen sulkeissa olevan ohjeen perusteella. Jos pohjaa ei tunnisteta, tarkista tulos ennen tallentamista.</p>
+      </details>
+    </div>
+  </section>
+  <footer>Rautapäiväkirja · toimii selaimessa · tiedot tallennetaan paikallisesti</footer>
+</main>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const STORAGE_KEY = 'rautapaivakirja-v1';
+  const defaultRecords = [
+    {name:'Tempaus',kg:90},
+    {name:'Työntö',kg:123},
+    {name:'Pukkitempaus',kg:83},
+    {name:'Raakarive',kg:115},
+    {name:'Takakyykky',kg:165},
+    {name:'Maastaveto',kg:190},
+    {name:'Penkkipunnerrus',kg:107.5},
+    {name:'Pystypunnerrus',kg:70}
+  ];
+  const aliases = [
+    {test:/raaka\s*rinnalle\s*suorin\s*jaloin/i, record:'Raakarive'},
+    {test:/raaka\s*rinnalle\s*ht\b/i, record:'Raakarive'},
+    {test:/raaka\s*rive.*riipusta\s*polven\s*alta/i, record:'Raakarive'},
+    {test:/raaka\s*rive|raakarive|power\s*clean/i, record:'Raakarive'},
+    {test:/työntö\s*veto/i, record:'Työntö'},
+    {test:/työntö\s*irrotus/i, record:'Työntö'},
+    {test:/pukki\s*tempaus|pukkitempaus/i, record:'Pukkitempaus'},
+    {test:/maastaveto/i, record:'Maastaveto'},
+    {test:/penkki|penkkipunnerrus/i, record:'Penkkipunnerrus'},
+    {test:/pysty\s*punnerrus|pystypunnerrus|overhead\s*press/i, record:'Pystypunnerrus'},
+    {test:/tempaus/i, record:'Tempaus'},
+    {test:/työntö/i, record:'Työntö'},
+    {test:/takakyykky/i, record:'Takakyykky'},
+    {test:/etukyykky/i, record:'Etukyykky'},
+    {test:/kyykky/i, record:'Takakyykky'}
+  ];
+  const load = () => {
+    try {
+      const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      if (s && Array.isArray(s.records) && Array.isArray(s.log)) return s;
+    } catch(e) {}
+    return {records:structuredClone(defaultRecords), log:[]};
+  };
+  let state = load(), currentResult = null, currentHTML = '';
+  const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  const today = new Date(); $('workoutDate').value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+  function plainTextFromEditor() {
+    return $('workoutInput').innerText.replace(/\u00a0/g,' ').replace(/\r/g,'').trim();
+  }
+  function editorLines() {
+    const root = $('workoutInput');
+    const out = [];
+    function walk(node, bold=false) {
+      if (node.nodeType === Node.TEXT_NODE) return node.nodeValue;
+      if (node.nodeType !== Node.ELEMENT_NODE) return '';
+      const tag = node.tagName.toLowerCase();
+      if (tag === 'br') return '\n';
+      const b = bold || ['b','strong'].includes(tag) || (node.style && node.style.fontWeight && (node.style.fontWeight==='bold' || Number(node.style.fontWeight)>=600));
+      let s = Array.from(node.childNodes).map(n=>walk(n,b)).join('');
+      if (['div','p','li','h1','h2','h3'].includes(tag)) s += '\n';
+      return b ? s.split('\n').map(x=>x ? `**${x}**` : x).join('\n') : s;
+    }
+    let raw = Array.from(root.childNodes).map(n=>walk(n,false)).join('');
+    raw = raw.replace(/\n{3,}/g,'\n\n').replace(/\u00a0/g,' ');
+    return raw.split('\n').map(s=>s.trim()).filter((s,i,a)=>s.length || (i>0 && a[i-1].length));
+  }
+  function stripMarkdown(s){ return s.replace(/\*\*/g,'').replace(/<[^>]*>/g,'').trim(); }
+  function getRecordForLine(line, previousRecord) {
+    const clean = stripMarkdown(line);
+    // explicit normi Raaka rive / raakarive note takes priority
+    for (const a of aliases) if (a.test.test(clean)) {
+      const r = state.records.find(x=>x.name.toLowerCase()===a.record.toLowerCase());
+      if (r) return r;
+    }
+    // common lift names from editable records
+    for (const r of [...state.records].sort((a,b)=>b.name.length-a.name.length)) {
+      if (clean.toLowerCase().includes(r.name.toLowerCase())) return r;
+    }
+    return previousRecord || null;
+  }
+  const setRegex = /(\d+(?:[.,]\d+)?)\s*%\s*(?:[x×*]\s*)?(\d+(?:\s*\+\s*\d+)*)/gi;
+  function escapeHTML(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function parseWorkout() {
+    const lines = editorLines();
+    if (!lines.some(x=>stripMarkdown(x))) { $('calcStatus').textContent='Liitä ensin treeni tekstikenttään.'; return; }
+    let activeRecord=null, liftLine=null, output=[], warnings=[], sets=0;
+    const customName=$('workoutName').value.trim();
+    const title = customName || (stripMarkdown(lines[0]).match(/^harjoitus\b/i) ? stripMarkdown(lines[0]) : 'Harjoitus');
+    output.push(`<div class="workout-title">${escapeHTML(title)}</div>`);
+    for (let raw of lines) {
+      const boldLine = raw.includes('**');
+      const clean = stripMarkdown(raw);
+      if (!clean) { output.push('<div class="extra">&nbsp;</div>'); continue; }
+      const matches = [...clean.matchAll(setRegex)];
+      if (matches.length) {
+        const before = clean.slice(0,matches[0].index).trim();
+        // If the same line contains a lift title before its first set, print it as a lift heading.
+        if (before && !/^(harjoitus\s*\d*)$/i.test(before)) {
+          const matchedRecord=getRecordForLine(before, activeRecord);
+          if (matchedRecord) activeRecord=matchedRecord;
+          liftLine=before;
+          output.push(`<div class="lift">${boldLine ? '<strong>'+escapeHTML(before)+'</strong>' : escapeHTML(before)}</div>`);
+        }
+        if (!activeRecord) {
+          warnings.push(`Maksimipohjaa ei tunnistettu riville: "${clean}"`);
+        }
+        for (let i=0;i<matches.length;i++) {
+          const m=matches[i], pct=Number(m[1].replace(',','.')), reps=m[2].replace(/\s/g,'');
+          const kg=activeRecord ? Math.round(activeRecord.kg*pct/100) : null;
+          const line=`${m[1]}% × ${reps}${kg!==null ? ` (${kg} kg)` : ' (maksimipohja puuttuu)'}`;
+          const setIsBold = boldLine && raw.startsWith('**') && raw.endsWith('**');
+          output.push(`<div class="set">${setIsBold ? '<strong>'+escapeHTML(line)+'</strong>' : escapeHTML(line)}</div>`);
+          sets++;
+          const end=m.index+m[0].length;
+          const between=clean.slice(end, i<matches.length-1 ? matches[i+1].index : clean.length).trim();
+          if (between && !/^[,;]+$/.test(between)) output.push(`<div class="extra">${escapeHTML(between)}</div>`);
+        }
+      } else {
+        const candidate=getRecordForLine(clean, null);
+        if (candidate) activeRecord=candidate;
+        const isTitle=/^harjoitus\b/i.test(clean);
+        const safe=escapeHTML(clean);
+        output.push(`<div class="${isTitle?'workout-title':'extra'}">${boldLine ? '<strong>'+safe+'</strong>' : safe}</div>`);
+      }
+    }
+    currentHTML=output.join('');
+    currentResult={html:currentHTML, title, date:$('workoutDate').value || new Date().toISOString().slice(0,10), plain:htmlToText(currentHTML), warnings, sets};
+    $('workoutPreview').innerHTML=currentHTML;
+    $('previewPanel').classList.remove('hidden');
+    $('calcStatus').textContent=`Tulkittuja sarjoja: ${sets}. Tarkista tulos ennen tallentamista.`;
+    $('unknownBox').classList.toggle('hidden', warnings.length===0);
+    $('unknownBox').textContent=warnings.length ? 'Tarkista nämä kohdat: '+[...new Set(warnings)].join(' · ') : '';
+    $('saveStatus').textContent='';
+    $('previewPanel').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  function htmlToText(html) {
+    const d=document.createElement('div'); d.innerHTML=html;
+    return d.innerText.replace(/\n{3,}/g,'\n\n').trim();
+  }
+  function htmlToRichClipboard(html) {
+    return new Blob([`<html><body>${html}</body></html>`],{type:'text/html'});
+  }
+  async function copyWorkout() {
+    if (!currentResult) return;
+    try {
+      if (navigator.clipboard && window.ClipboardItem) {
+        const item=new ClipboardItem({'text/html':htmlToRichClipboard(currentHTML),'text/plain':new Blob([currentResult.plain],{type:'text/plain'})});
+        await navigator.clipboard.write([item]);
+      } else {
+        const r=document.createRange();r.selectNodeContents($('workoutPreview'));
+        const sel=getSelection();sel.removeAllRanges();sel.addRange(r);
+        document.execCommand('copy');sel.removeAllRanges();
+      }
+      $('saveStatus').textContent='Treeni kopioitu. Voit liittää sen esimerkiksi Google Docsiin.';
+    } catch(e) {
+      $('saveStatus').textContent='Automaattinen kopiointi ei onnistunut tässä selaimessa. Valitse treenin teksti ja kopioi se käsin.';
+    }
+  }
+  function saveWorkout() {
+    if (!currentResult) return;
+    const entry={id:crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),date:currentResult.date,title:currentResult.title,html:currentResult.html,plain:currentResult.plain,source:plainTextFromEditor()};
+    state.log.unshift(entry); saveState(); renderLog();
+    $('saveStatus').textContent='Treeni tallennettu päiväkirjaan.';
+  }
+  function renderRecords() {
+    $('recordGrid').innerHTML='';
+    state.records.forEach((r,i)=>{
+      const card=document.createElement('div');card.className='record';
+      const name=document.createElement('div');name.className='record-name';name.textContent=r.name;
+      const wrap=document.createElement('div');wrap.className='record-kg';
+      const input=document.createElement('input');input.type='number';input.step='0.5';input.min='1';input.value=r.kg;input.setAttribute('aria-label',r.name+' maksimipohja kg');
+      const unit=document.createElement('small');unit.textContent='kg';
+      const del=document.createElement('button');del.className='secondary small';del.textContent='Poista';del.title='Poista liike';
+      input.addEventListener('change',()=>{const n=Number(input.value);if(n>0){state.records[i].kg=n;saveState();}});
+      del.addEventListener('click',()=>{if(confirm(`Poistetaanko ${r.name} maksimipohjista?`)){state.records.splice(i,1);saveState();renderRecords();}});
+      wrap.append(input,unit,del);card.append(name,wrap);$('recordGrid').append(card);
+    });
+  }
+  function renderLog() {
+    const q=($('logSearch')?.value||'').toLowerCase().trim();
+    const host=$('logList'); if(!host)return;host.innerHTML='';
+    const items=state.log.filter(e=>(e.title+' '+e.date+' '+e.plain).toLowerCase().includes(q));
+    if(!items.length){host.innerHTML='<p class="muted">Ei vielä tallennettuja treenejä.</p>';return;}
+    items.forEach(e=>{
+      const el=document.createElement('div');el.className='entry';
+      const top=document.createElement('div');top.className='row';
+      const info=document.createElement('div');info.innerHTML=`<div class="entry-title"></div><div class="entry-meta"></div>`;
+      info.querySelector('.entry-title').textContent=e.title||'Harjoitus';info.querySelector('.entry-meta').textContent=e.date;
+      const actions=document.createElement('div');actions.className='actions fit';
+      const open=document.createElement('button');open.className='secondary small';open.textContent='Avaa';open.onclick=()=>{switchTab('workout');$('workoutPreview').innerHTML=e.html;$('previewPanel').classList.remove('hidden');currentResult={...e};currentHTML=e.html;$('workoutInput').innerText=e.source||'';$('workoutName').value=e.title;$('workoutDate').value=e.date;};
+      const copy=document.createElement('button');copy.className='secondary small';copy.textContent='Kopioi';copy.onclick=async()=>{currentResult={...e};currentHTML=e.html;await copyWorkout();};
+      const del=document.createElement('button');del.className='danger small';del.textContent='Poista';del.onclick=()=>{if(confirm('Poistetaanko tämä treeni päiväkirjasta?')){state.log=state.log.filter(x=>x.id!==e.id);saveState();renderLog();}};
+      actions.append(open,copy,del);top.append(info,actions);
+      const preview=document.createElement('div');preview.className='entry-preview';preview.textContent=e.plain||'';
+      el.append(top,preview);host.append(el);
+    });
+  }
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+    ['workout','log','records','settings'].forEach(t=>$('view-'+t).classList.toggle('hidden',t!==tab));
+    if(tab==='records')renderRecords();if(tab==='log')renderLog();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function download(name,content,type) {
+    const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+  $('calculateBtn').addEventListener('click',parseWorkout);
+  $('clearBtn').addEventListener('click',()=>{$('workoutInput').innerHTML='';$('workoutName').value='';$('calcStatus').textContent='';$('unknownBox').classList.add('hidden');});
+  $('copyBtn').addEventListener('click',copyWorkout);
+  $('printBtn').addEventListener('click',()=>window.print());
+  $('saveBtn').addEventListener('click',saveWorkout);
+  $('logSearch').addEventListener('input',renderLog);
+  $('addRecordBtn').addEventListener('click',()=>{
+    const name=$('newRecordName').value.trim(),kg=Number($('newRecordKg').value);
+    if(!name||!(kg>0)){alert('Anna liikkeen nimi ja kelvollinen maksimipohja.');return;}
+    if(state.records.some(r=>r.name.toLowerCase()===name.toLowerCase())){alert('Tämän niminen liike on jo listassa.');return;}
+    state.records.push({name,kg});saveState();renderRecords();$('newRecordName').value='';$('newRecordKg').value='';
+  });
+  $('resetRecordsBtn').addEventListener('click',()=>{if(confirm('Palautetaanko alkuperäiset maksimipohjat? Tämä korvaa nykyisen ennätyslistan.')){state.records=structuredClone(defaultRecords);saveState();renderRecords();}});
+  $('backupBtn').addEventListener('click',()=>{download('rautapaivakirja-varmuuskopio.json',JSON.stringify({version:1,exportedAt:new Date().toISOString(),...state},null,2),'application/json');$('backupStatus').textContent='Varmuuskopio ladattu.';});
+  $('exportLogBtn').addEventListener('click',()=>download('treenipaivakirja.json',JSON.stringify({version:1,log:state.log},null,2),'application/json'));
+  $('restoreBtn').addEventListener('click',()=>$('restoreFile').click());
+  $('restoreFile').addEventListener('change',async e=>{
+    const f=e.target.files[0];if(!f)return;
+    try{const data=JSON.parse(await f.text());if(!Array.isArray(data.records)||!Array.isArray(data.log))throw new Error('Varmuuskopion rakenne ei kelpaa.');
+      if(confirm('Palautetaanko varmuuskopio? Nykyiset ennätykset ja päiväkirja korvataan.')){state={records:data.records,log:data.log};saveState();renderRecords();renderLog();$('backupStatus').textContent='Varmuuskopio palautettu.';}
+    }catch(err){$('backupStatus').textContent='Palautus epäonnistui: '+err.message;}e.target.value='';
+  });
+  renderRecords();renderLog();
+  if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

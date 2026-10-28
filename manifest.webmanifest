@@ -1,0 +1,19 @@
+{
+  "name": "Rautapäiväkirja – painonnoston treenilaskuri",
+  "short_name": "Rautapäiväkirja",
+  "description": "Painonnoston treenilaskuri, päiväkirja ja ennätykset.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101216",
+  "theme_color": "#15181d",
+  "lang": "fi",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
